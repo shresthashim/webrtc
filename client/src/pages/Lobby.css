@@ -1,0 +1,79 @@
+.lobby-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #6dd5ed, #2193b0);
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .lobby-card {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 400px;
+    transition: transform 0.3s;
+  }
+  
+  .lobby-card:hover {
+    transform: translateY(-10px);
+  }
+  
+  .lobby-title {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .lobby-form {
+    margin-bottom: 20px;
+  }
+  
+  .input-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: border 0.2s, box-shadow 0.2s;
+  }
+  
+  .form-input:focus {
+    border-color: #2193b0;
+    box-shadow: 0 0 8px rgba(33, 147, 176, 0.4);
+    outline: none;
+  }
+  
+  .join-button {
+    padding: 12px 20px;
+    background-color: #2193b0;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+  
+  .join-button:hover {
+    background-color: #6dd5ed;
+    transform: translateY(-2px);
+  }
+  
+  .join-button:active {
+    background-color: #6db2d8;
+  }
+  
