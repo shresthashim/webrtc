@@ -1,14 +1,27 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { useSocket } from "../context/SocketProvider";
 import "./Lobby.css";
 
 const Lobby = () => {
   const [email, setEmail] = useState("");
   const [room, setRoom] = useState("");
 
+  const socket = useSocket();
+
+  console.log(socket);
+
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
-    console.log(email, room);
-  }, []);
+    socket.emit("room:join", { email, room });
+  }, [email, room, socket]);
+
+  useEffect(() => { 
+    if (socket) {
+      socket.on("user:joined", (email) => {
+        console.log(`${email} has joined the room`);
+      });
+    }
+  }, [socket]);
 
   return (
     <div className='lobby-container'>
