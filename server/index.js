@@ -13,10 +13,11 @@ const emailToSocketIdMap = new Map();
 const SocketIdToEmailMap = new Map();
 
 io.on("connection", (socket) => {
-
   socket.on("room:join", ({ email, room }) => {
     emailToSocketIdMap.set(email, socket.id);
     SocketIdToEmailMap.set(socket.id, email);
+
+    io.to(room).emit("user:joined", { email, id: socket.id });
 
     socket.join(room);
 
