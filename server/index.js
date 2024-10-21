@@ -23,4 +23,8 @@ io.on("connection", (socket) => {
 
     io.to(socket.id).emit("user:joined", email);
   });
+
+  socket.on("call", ({ to, offer }) => {
+    io.to(to).emit("call", { from: socket.id, offer });
+  });
 });
