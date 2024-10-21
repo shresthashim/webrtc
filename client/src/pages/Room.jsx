@@ -8,6 +8,7 @@ const RoomPage = () => {
 
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
 
   const handleUserJoined = useCallback(({ email, id }) => {
     console.log(`${email} joined the room with id: ${id}`);
@@ -25,10 +26,14 @@ const RoomPage = () => {
     [socket]
   );
 
-  const handleCallAccepted = useCallback(async ({ from, answer }) => {
-    peer.setLocalDescription(answer);
-    console.log(`Call accepted from ${from}`);
-  });
+  const handleCallAccepted = useCallback(
+    async ({ from, answer }) => {
+      peer.setLocalDescription(answer);
+      console.log(`Call accepted from ${from}`);
+      peer.peer.addTrack(myStream.getTracks()[0], myStream);
+    },
+    [myStream]
+  );
 
   const handleCall = useCallback(async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -37,17 +42,55 @@ const RoomPage = () => {
     setMyStream(stream);
   }, [socket, remoteSocketId]);
 
+  const handleNegotiations = useCallback(async () => {
+    const offer = await peer.getOffer();
+    socket.emit("peer:negotiations", { offer, to: remoteSocketId });
+  });
+
+  const handleIncomingNegotiations = useCallback(async ({ offer, from }) => {
+    const ans = peer.getAnswer(offer);
+    socket.emit("peer:negotiations:done", { answer: ans, to: from });
+  });
+
+  const handleNegoFinal = useCallback(
+    async ({ answer }) => {
+      await peer.setLocalDescription(answer);
+      peer.peer.addTrack(myStream.getTracks()[0], myStream);
+    },
+    [myStream]
+  );
+
+  useEffect(() => {
+    peer.peer.addEventListener("negotiations", handleNegotiations);
+
+    return () => {
+      peer.peer.removeEventListener("negotiations", handleNegotiations);
+    };
+  }, [handleNegotiations]);
+
+  useEffect(() => {
+    peer.peer.addEventListener("track", (event) => {
+      const remoteStream = event.streams;
+
+      setRemoteSocketId(remoteStream);
+    });
+  }, []);
+
   useEffect(() => {
     socket.on("user:joined", handleUserJoined);
     socket.on("call", handleIncomingCall);
     socket.on("call:accepted", handleCallAccepted);
+    socket.on("peer:negotiations", handleIncomingNegotiations);
+    socket.on("peer:negotiations:final", handleNegoFinal);
 
     return () => {
       socket.off("user:joined", handleUserJoined);
       socket.off("call", handleIncomingCall);
       socket.off("call:accepted", handleCallAccepted);
+      socket.off("peer:negotiations", handleIncomingNegotiations);
+      socket.off("peer:negotiations:final", handleNegoFinal);
     };
-  }, [socket, handleUserJoined, , handleCallAccepted]);
+  }, [socket, handleUserJoined, , handleCallAccepted, handleIncomingCall, handleIncomingNegotiations, handleNegoFinal]);
 
   return (
     <>
@@ -58,6 +101,9 @@ const RoomPage = () => {
 
       <h1>My Stream</h1>
       {myStream && <ReactPlayer muted height={300} width={500} url={myStream} playing />}
+
+      <h1>Remote Stream</h1>
+      {remoteStream && <ReactPlayer muted height={300} width={500} url={remoteStream} playing />}
     </>
   );
 };
