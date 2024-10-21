@@ -27,7 +27,9 @@ const RoomPage = () => {
   );
 
   const sendStreams = useCallback(() => {
-    peer.peer.addTrack(myStream.getTracks()[0], myStream);
+    for (const track of myStream.getTracks()) {
+      peer.peer.addTrack(track, myStream);
+    }
   }, [myStream]);
 
   const handleCallAccepted = useCallback(
@@ -52,14 +54,13 @@ const RoomPage = () => {
   });
 
   const handleIncomingNegotiations = useCallback(async ({ offer, from }) => {
-    const ans = peer.getAnswer(offer);
+    const ans = await peer.getAnswer(offer);
     socket.emit("peer:negotiations:done", { answer: ans, to: from });
   });
 
   const handleNegoFinal = useCallback(
     async ({ answer }) => {
       await peer.setLocalDescription(answer);
-      peer.peer.addTrack(myStream.getTracks()[0], myStream);
     },
     [myStream]
   );
@@ -73,10 +74,10 @@ const RoomPage = () => {
   }, [handleNegotiations]);
 
   useEffect(() => {
-    peer.peer.addEventListener("track", (event) => {
+    peer.peer.addEventListener("track", async(event) => {
       const remoteStream = event.streams;
 
-      setRemoteSocketId(remoteStream);
+      setRemoteStream(remoteStream[0]);
     });
   }, []);
 
